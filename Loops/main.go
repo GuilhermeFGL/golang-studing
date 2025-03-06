@@ -30,4 +30,9 @@ func main() {
 	for k, v := range myMap {
 		fmt.Println(k, v)
 	}
+
+	for {
+		fmt.Println("infinite loop")
+		break
+	}
 }
