@@ -1,6 +1,9 @@
-package Types
+package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 func main() {
 
@@ -13,5 +16,11 @@ func main() {
 	var s string = "hello world"
 	var c = 'c' // char
 
-	fmt.Println(n, b, f, s, c, " ")
+	// boolean
+	var bol bool = true
+
+	// error
+	var e error = errors.New("internal error")
+
+	fmt.Println(n, b, f, s, c, bol, e, " ")
 }
