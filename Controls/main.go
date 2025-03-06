@@ -16,4 +16,16 @@ func main() {
 	} else {
 		fmt.Println("still less than 15")
 	}
+
+	switch t := "opt1"; t {
+	case "opt1":
+		fmt.Println("opt1")
+		fallthrough // continue to the next condition
+
+	case "opt2":
+		fmt.Println("opt2")
+
+	default:
+		fmt.Println("default")
+	}
 }
