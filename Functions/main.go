@@ -35,6 +35,30 @@ func delayedExecution() {
 	fmt.Println("delayed execution")
 }
 
+func panicAndRecover(i int) bool {
+	defer func() {
+		if r := recover(); r != nil { // recover from panic
+			fmt.Println("Recovering from panic:", r)
+		}
+	}()
+
+	if i > 0 {
+		return true
+	} else if i < 0 {
+		return false
+	}
+
+	panic("!!! i is 0 !!!") // interrupt execution (this is not an error)
+}
+
+func closure() func() {
+	closure := func() {
+		fmt.Println("closure")
+	}
+
+	return closure
+}
+
 func main() {
 	defer delayedExecution() // will be executed at the end of the scope
 
@@ -53,6 +77,12 @@ func main() {
 	internalFunction("hello world from a function")
 
 	fmt.Println("fibonacci:", recursive(10))
+
+	panicAndRecover(0)
+
+	closure()()
+	myClosure := closure()
+	myClosure()
 
 	result := func(text string) string {
 		println("Anonymous function:", text) // will not be printed
