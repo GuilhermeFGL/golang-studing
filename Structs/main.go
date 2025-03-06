@@ -5,8 +5,7 @@ import "fmt"
 type user struct {
 	name    string
 	age     uint8
-	address // this is "inheritance"
-	// it will basically copy all it properties into this struct
+	address // it will basically copy all it properties into this struct
 }
 
 type address struct {
