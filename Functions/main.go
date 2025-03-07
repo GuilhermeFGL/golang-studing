@@ -2,6 +2,15 @@ package main
 
 import "fmt"
 
+func packagePrivate() {
+	// this function is visible only in this package
+}
+
+// Public it is good practice to add a comment in this case
+func Public() {
+	// this functions in visible everywhere
+}
+
 func add(n1 int, n2 int) int {
 	return n1 + n2
 }

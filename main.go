@@ -1,13 +1,18 @@
 package main
 
 import (
+	"example.com/m/v2/app"
 	"fmt"
+	"log"
+	"os"
 )
 
 func main() {
-	var greeting = "Hello, Go!"
-	fmt.Println(greeting)
+	fmt.Println("Hello, Go!")
 
-	var num1, num2 = 1, 2
-	fmt.Println(num1 / num2)
+	application := app.GenerateCommandLineApplication()
+	err := application.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
