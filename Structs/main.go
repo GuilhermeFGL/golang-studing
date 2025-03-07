@@ -13,6 +13,11 @@ type address struct {
 	number int
 }
 
+func (u *user) print() { // this is a "method" which is bound to a struct
+	fmt.Printf("name: %s, age: %d, address: street: %s, number: %d",
+		u.name, u.age, u.address.street, u.address.number)
+}
+
 func main() {
 	var myUser1 = user{
 		name: "Jack",
@@ -36,4 +41,6 @@ func main() {
 	var myUser5 = user{}
 
 	fmt.Println(myUser1, myUser2, myUser3, myUser4, myUser5, " ")
+
+	myUser1.print()
 }
