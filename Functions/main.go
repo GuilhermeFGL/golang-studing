@@ -59,7 +59,15 @@ func closure() func() {
 	return closure
 }
 
-func main() {
+func pointer(n *int) {
+	*n *= -1
+}
+
+func init() { // will run before main function; can have one init function per file
+	fmt.Println("init")
+}
+
+func main() { // can have one main function per package
 	defer delayedExecution() // will be executed at the end of the scope
 
 	fmt.Println(add(1, 2))
@@ -83,6 +91,10 @@ func main() {
 	closure()()
 	myClosure := closure()
 	myClosure()
+
+	reference := 10
+	pointer(&reference)
+	fmt.Println(reference)
 
 	result := func(text string) string {
 		println("Anonymous function:", text) // will not be printed
