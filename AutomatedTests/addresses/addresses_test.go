@@ -8,12 +8,18 @@ type TestCase struct {
 	expected    bool
 }
 
+// to run all tests: go test ./... -v
 func TestTypeOfAddress(t *testing.T) { // needs to start with Test
 
-	cases := []TestCase{
+	testCases := []TestCase{
 		{
-			description: "positive case",
+			description: "positive case - Street",
 			input:       "Street Main number 123",
+			expected:    true,
+		},
+		{
+			description: "positive case - Avenue",
+			input:       "Avenue Main number 123",
 			expected:    true,
 		},
 		{
@@ -23,7 +29,7 @@ func TestTypeOfAddress(t *testing.T) { // needs to start with Test
 		},
 	}
 
-	for _, testCase := range cases {
+	for _, testCase := range testCases {
 		t.Log(testCase.description)
 		received := TypeOfAddress(testCase.input)
 		if received != testCase.expected {

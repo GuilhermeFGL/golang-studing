@@ -3,16 +3,14 @@ package addresses
 import "strings"
 
 func TypeOfAddress(address string) bool {
-	validTypes := []string{"Street", "Address"}
+	validTypes := []string{"Street", "Avenue"}
 
 	firstWord := strings.Split(address, " ")[0]
-	addressHasValidType := false
 	for _, validType := range validTypes {
 		if firstWord == validType {
-			addressHasValidType = true
-			break
+			return true
 		}
 	}
 
-	return addressHasValidType
+	return false
 }
