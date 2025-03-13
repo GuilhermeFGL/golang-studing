@@ -1,7 +1,7 @@
 package main
 
 import (
-	"example.com/m/v2/app"
+	"example.com/m/v2/App"
 	"fmt"
 	"log"
 	"os"
@@ -10,7 +10,7 @@ import (
 func main() {
 	fmt.Println("Hello, Go!")
 
-	application := app.GenerateCommandLineApplication()
+	application := LocalApp.GenerateCommandLineApplication()
 	err := application.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
