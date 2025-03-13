@@ -1,6 +1,7 @@
 package main
 
 import (
+	"example.com/m/v2/API/src/configuration"
 	"example.com/m/v2/API/src/router"
 	"log"
 	"net/http"
@@ -9,8 +10,10 @@ import (
 func main() {
 	log.Println("Starting API")
 
+	configuration.LoadConfigurations()
+
 	r := router.GenerateRouter()
 
-	log.Println("Listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Printf("Listening on port %s /n", configuration.ApiPort)
+	log.Fatal(http.ListenAndServe(":"+configuration.ApiPort, r))
 }
