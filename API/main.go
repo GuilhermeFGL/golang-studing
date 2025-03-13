@@ -14,6 +14,6 @@ func main() {
 
 	r := router.GenerateRouter()
 
-	log.Printf("Listening on port %s /n", configuration.ApiPort)
+	log.Printf("Listening on port %s", configuration.ApiPort)
 	log.Fatal(http.ListenAndServe(":"+configuration.ApiPort, r))
 }
