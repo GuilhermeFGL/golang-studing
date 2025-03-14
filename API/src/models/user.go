@@ -17,15 +17,24 @@ type User struct {
 
 // Prepare validate and format user data
 func (user *User) Prepare() error {
-	if err := user.validate(); err != nil {
+	if err := user.validate(true); err != nil {
 		return err
 	}
 
-	user.format()
+	user.Format()
 	return nil
 }
 
-func (user *User) validate() error {
+func (user *User) PrepareForUpdate() error {
+	if err := user.validate(false); err != nil {
+		return err
+	}
+
+	user.Format()
+	return nil
+}
+
+func (user *User) validate(creating bool) error {
 	if user.Name == "" {
 		return errors.New("field Name is required")
 	}
@@ -38,14 +47,14 @@ func (user *User) validate() error {
 		return errors.New("field NickName is required")
 	}
 
-	if user.Password == "" {
+	if creating && user.Password == "" {
 		return errors.New("field Password is required")
 	}
 
 	return nil
 }
 
-func (user *User) format() {
+func (user *User) Format() {
 	user.Name = strings.TrimSpace(user.Name)
 	user.Email = strings.TrimSpace(user.Email)
 	user.NickName = strings.TrimSpace(user.NickName)
