@@ -41,7 +41,7 @@ func (repository User) CreateUser(user models.User) (models.User, error) {
 
 // FetchUser find user by id
 func (repository User) FetchUser(id uint64) (models.User, error) {
-	var rows, err = repository.db.Query("SELECT id, name, nickname, email, created_at FROM users WHERE id = ?", id)
+	rows, err := repository.db.Query("SELECT id, name, nickname, email, created_at FROM users WHERE id = ?", id)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -68,8 +68,10 @@ func (repository User) FetchUser(id uint64) (models.User, error) {
 
 // SearchUser return all user by filter
 func (repository User) SearchUser(name string) ([]models.User, error) {
-	var rows *sql.Rows
-	var err error
+	var (
+		rows *sql.Rows
+		err error
+	)
 	if name != "" {
 		rows, err = repository.db.Query("SELECT id, name, nickname, email, created_at FROM users WHERE lower(name) LIKE ? or lower(nickname) LIKE ?", "%"+name+"%", "%"+name+"%")
 	} else {
@@ -140,8 +142,6 @@ func (repository User) DeleteUser(id uint64) (bool, error) {
 	if rowsAffected, err := statement.Exec(id); err == nil {
 		if rowAffected, _ := rowsAffected.RowsAffected(); rowAffected > 0 {
 			return true, nil
-		} else {
-			return false, nil
 		}
 	}
 

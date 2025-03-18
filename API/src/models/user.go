@@ -2,6 +2,9 @@ package models
 
 import (
 	"errors"
+	"example.com/m/v2/API/src/security"
+	"github.com/badoux/checkmail"
+	"log"
 	"strings"
 	"time"
 )
@@ -21,8 +24,7 @@ func (user *User) Prepare() error {
 		return err
 	}
 
-	user.Format()
-	return nil
+	return user.Format()
 }
 
 func (user *User) PrepareForUpdate() error {
@@ -30,8 +32,7 @@ func (user *User) PrepareForUpdate() error {
 		return err
 	}
 
-	user.Format()
-	return nil
+	return user.Format()
 }
 
 func (user *User) validate(creating bool) error {
@@ -41,6 +42,10 @@ func (user *User) validate(creating bool) error {
 
 	if user.Email == "" {
 		return errors.New("field Email is required")
+	}
+
+	if err := checkmail.ValidateFormat(user.Email); err != nil {
+		return errors.New("field Email is invalid: " + err.Error())
 	}
 
 	if user.NickName == "" {
@@ -54,9 +59,21 @@ func (user *User) validate(creating bool) error {
 	return nil
 }
 
-func (user *User) Format() {
+func (user *User) Format() error {
 	user.Name = strings.TrimSpace(user.Name)
 	user.Email = strings.TrimSpace(user.Email)
 	user.NickName = strings.TrimSpace(user.NickName)
-	user.Password = strings.TrimSpace(user.Password)
+
+	if user.Password != "" {
+		user.Password = strings.TrimSpace(user.Password)
+
+		hash, err := security.Hash(user.Password)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+		user.Password = hash
+	}
+
+	return nil
 }
