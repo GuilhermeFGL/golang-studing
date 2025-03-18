@@ -10,8 +10,8 @@ type User struct {
 	db *sql.DB
 }
 
-// NewRepository create a new repository for user
-func NewRepository(db *sql.DB) *User {
+// NewUserRepository create a new repository for user
+func NewUserRepository(db *sql.DB) *User {
 	return &User{db}
 }
 
@@ -66,11 +66,38 @@ func (repository User) FetchUser(id uint64) (models.User, error) {
 	return models.User{}, nil
 }
 
+// FindByEmail find user by email
+func (repository User) FindByEmail(email string) (models.User, error) {
+	rows, err := repository.db.Query("SELECT id, name, nickname, email, password, created_at FROM users WHERE email = ?", email)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	if rows.Next() {
+		var user models.User
+
+		if err = rows.Scan(&user.ID, &user.Name, &user.NickName, &user.Email, &user.Password, &user.CreatedAt); err == nil {
+			return user, nil
+		} else {
+			return models.User{}, err
+		}
+	}
+
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatal("Error closing query")
+		}
+	}(rows)
+
+	return models.User{}, nil
+}
+
 // SearchUser return all user by filter
 func (repository User) SearchUser(name string) ([]models.User, error) {
 	var (
 		rows *sql.Rows
-		err error
+		err  error
 	)
 	if name != "" {
 		rows, err = repository.db.Query("SELECT id, name, nickname, email, created_at FROM users WHERE lower(name) LIKE ? or lower(nickname) LIKE ?", "%"+name+"%", "%"+name+"%")

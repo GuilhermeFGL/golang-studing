@@ -26,7 +26,7 @@ func ListUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userRepository := repository.NewRepository(db)
+	userRepository := repository.NewUserRepository(db)
 	users, err := userRepository.SearchUser(queryName)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error creating user")
@@ -57,7 +57,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userRepository := repository.NewRepository(db)
+	userRepository := repository.NewUserRepository(db)
 	user, err := userRepository.FetchUser(userID)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error creating user")
@@ -70,6 +70,13 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	} else {
 		httpresponse.JSON(w, http.StatusOK, user)
 	}
+
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal("Error closing db", err)
+		}
+	}(db)
 }
 
 // CreateUser create a new user
@@ -100,7 +107,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userRepository := repository.NewRepository(db)
+	userRepository := repository.NewUserRepository(db)
 	createdUser, err := userRepository.CreateUser(user)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error creating user")
@@ -153,7 +160,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userRepository := repository.NewRepository(db)
+	userRepository := repository.NewUserRepository(db)
 	updatedUser, err := userRepository.UpdateUser(userID, user)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error updating user")
@@ -191,7 +198,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userRepository := repository.NewRepository(db)
+	userRepository := repository.NewUserRepository(db)
 	deletedUser, err := userRepository.DeleteUser(userID)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error deleting user")

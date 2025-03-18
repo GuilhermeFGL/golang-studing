@@ -72,7 +72,7 @@ func (user *User) Format() error {
 			log.Fatal(err)
 			return err
 		}
-		user.Password = hash
+		user.Password = string(hash)
 	}
 
 	return nil
