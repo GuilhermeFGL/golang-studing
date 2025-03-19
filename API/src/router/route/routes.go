@@ -1,6 +1,7 @@
 package route
 
 import (
+	"example.com/m/v2/API/src/security"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -17,7 +18,13 @@ func ConfigureRoutes(router *mux.Router) {
 	routes := UserRoutes
 	routes = append(routes, LoginRoutes...)
 
-	for _, route := range routes {
-		router.HandleFunc(route.Uri, route.Func).Methods(route.Method)
+	for _, r := range routes {
+		if r.AuthRequested {
+			router.HandleFunc(r.Uri, security.Logger(security.Authorize(r.Func))).Methods(r.Method)
+		} else {
+			router.HandleFunc(r.Uri, security.Logger(r.Func)).Methods(r.Method)
+		}
+
+		router.HandleFunc(r.Uri, r.Func).Methods(r.Method)
 	}
 }

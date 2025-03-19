@@ -6,6 +6,7 @@ import (
 	"example.com/m/v2/API/src/database"
 	"example.com/m/v2/API/src/models"
 	"example.com/m/v2/API/src/repository"
+	"example.com/m/v2/API/src/security"
 	"example.com/m/v2/API/src/util/httpresponse"
 	"github.com/gorilla/mux"
 	"io"
@@ -134,6 +135,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tokenUserID, err := security.ExtractUserIdFromToken(r)
+	if err != nil || tokenUserID == 0 || tokenUserID != userID {
+		httpresponse.Error(w, http.StatusUnauthorized, "User not authorized to update user with id "+strconv.FormatUint(userID, 10))
+		return
+	}
+
 	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		httpresponse.Error(w, http.StatusBadRequest, "Error reading body")
@@ -188,6 +195,12 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.ParseUint(parameters["userId"], 10, 64)
 	if err != nil {
 		httpresponse.Error(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	tokenUserID, err := security.ExtractUserIdFromToken(r)
+	if err != nil || tokenUserID == 0 || tokenUserID != userID {
+		httpresponse.Error(w, http.StatusUnauthorized, "User not authorized to update user with id "+strconv.FormatUint(userID, 10))
 		return
 	}
 
