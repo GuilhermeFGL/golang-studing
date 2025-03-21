@@ -31,7 +31,6 @@ func ListUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := userRepository.SearchUser(queryName)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error creating user")
-		log.Fatal("Error searching user", err)
 		return
 	}
 
@@ -61,8 +60,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	userRepository := repository.NewUserRepository(db)
 	user, err := userRepository.FetchUser(userID)
 	if err != nil {
-		httpresponse.Error(w, http.StatusInternalServerError, "Error creating user")
-		log.Fatal("Error searching user", err)
+		httpresponse.Error(w, http.StatusInternalServerError, "Error fetching user: "+err.Error())
 		return
 	}
 
@@ -85,14 +83,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		httpresponse.Error(w, http.StatusBadRequest, "Error reading body")
-		log.Fatal("Error reading body", err)
 		return
 	}
 
 	var user models.User
 	if err = json.Unmarshal(requestBody, &user); err != nil {
 		httpresponse.Error(w, http.StatusBadRequest, "Error parsing body")
-		log.Fatal("Error parsing body", err)
 		return
 	}
 
@@ -112,7 +108,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	createdUser, err := userRepository.CreateUser(user)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error creating user")
-		log.Fatal("Error creating user", err)
 		return
 	}
 
@@ -144,14 +139,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		httpresponse.Error(w, http.StatusBadRequest, "Error reading body")
-		log.Fatal("Error reading body", err)
 		return
 	}
 
 	var user models.User
 	if err = json.Unmarshal(requestBody, &user); err != nil {
 		httpresponse.Error(w, http.StatusBadRequest, "Error parsing body")
-		log.Fatal("Error parsing body", err)
 		return
 	}
 
@@ -171,7 +164,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	updatedUser, err := userRepository.UpdateUser(userID, user)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error updating user")
-		log.Fatal("Error updating user", err)
 		return
 	}
 
@@ -215,7 +207,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	deletedUser, err := userRepository.DeleteUser(userID)
 	if err != nil {
 		httpresponse.Error(w, http.StatusInternalServerError, "Error deleting user")
-		log.Fatal("Error deleting user", err)
 		return
 	}
 
@@ -224,6 +215,67 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	} else {
 		httpresponse.Error(w, http.StatusNotFound, "User not found")
 	}
+
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal("Error closing database connection", err)
+		}
+	}(db)
+}
+
+// FollowUser allow user to follow another user
+func FollowUser(w http.ResponseWriter, r *http.Request) {
+	parameters := mux.Vars(r)
+	userID, err := strconv.ParseUint(parameters["userId"], 10, 64)
+	if err != nil {
+		httpresponse.Error(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+	followerID, err := strconv.ParseUint(parameters["followerId"], 10, 64)
+	if err != nil {
+		httpresponse.Error(w, http.StatusBadRequest, "Invalid follower ID")
+		return
+	}
+
+	tokenUserID, err := security.ExtractUserIdFromToken(r)
+	if err != nil || tokenUserID == 0 || tokenUserID != userID {
+		httpresponse.Error(w, http.StatusUnauthorized, "User not authorized to update user with id "+strconv.FormatUint(userID, 10))
+		return
+	}
+
+	if userID == followerID {
+		httpresponse.Error(w, http.StatusBadRequest, "Users can't follow themself")
+		return
+	}
+
+	db, err := database.Connect()
+	if err != nil {
+		httpresponse.Error(w, http.StatusInternalServerError, "Error connecting to database")
+		log.Fatal("Error connecting to database", err)
+		return
+	}
+
+	userRepository := repository.NewUserRepository(db)
+
+	user, err := userRepository.FetchUser(userID)
+	if err != nil || user.ID == 0 {
+		httpresponse.Error(w, http.StatusNotFound, "User not found")
+		return
+	}
+
+	follower, err := userRepository.FetchUser(followerID)
+	if err != nil || follower.ID == 0 {
+		httpresponse.Error(w, http.StatusNotFound, "Follower not found")
+		return
+	}
+
+	if err = userRepository.Follow(userID, followerID); err != nil {
+		httpresponse.Error(w, http.StatusInternalServerError, "Error following user")
+		return
+	}
+
+	httpresponse.JSON(w, http.StatusNoContent, nil)
 
 	defer func(db *sql.DB) {
 		err := db.Close()

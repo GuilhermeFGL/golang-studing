@@ -41,18 +41,29 @@ func (repository User) CreateUser(user models.User) (models.User, error) {
 
 // FetchUser find user by id
 func (repository User) FetchUser(id uint64) (models.User, error) {
-	rows, err := repository.db.Query("SELECT id, name, nickname, email, created_at FROM users WHERE id = ?", id)
+	rows, err := repository.db.Query("SELECT  u.id,  u.name,  u.nickname,  u.email,  u.created_at, f.follower_id "+
+		"FROM users AS u "+
+		"LEFT JOIN followers AS f on f.user_id = u.id "+
+		"WHERE u.id = ?", id)
 	if err != nil {
 		return models.User{}, err
 	}
 
+	var user models.User
 	if rows.Next() {
-		var user models.User
-
-		if err = rows.Scan(&user.ID, &user.Name, &user.NickName, &user.Email, &user.CreatedAt); err == nil {
-			return user, nil
-		} else {
+		var followers sql.NullString
+		if err = rows.Scan(&user.ID, &user.Name, &user.NickName, &user.Email, &user.CreatedAt, &followers); err != nil {
 			return models.User{}, err
+		}
+		if followers.Valid {
+			user.Followers = append(user.Followers, followers.String)
+		}
+
+		for rows.Next() {
+			if err = rows.Scan(&user.ID, &user.Name, &user.NickName, &user.Email, &user.CreatedAt, &followers); err != nil {
+				return models.User{}, err
+			}
+			user.Followers = append(user.Followers, followers.String)
 		}
 	}
 
@@ -63,7 +74,7 @@ func (repository User) FetchUser(id uint64) (models.User, error) {
 		}
 	}(rows)
 
-	return models.User{}, nil
+	return user, nil
 }
 
 // FindByEmail find user by email
@@ -180,4 +191,23 @@ func (repository User) DeleteUser(id uint64) (bool, error) {
 	}(statement)
 
 	return false, nil
+}
+
+// Follow allows a user to follow another
+func (repository User) Follow(userId uint64, followerId uint64) error {
+	statement, err := repository.db.Prepare("insert ignore into followers(user_id, follower_id) values(?, ?)")
+	if err != nil {
+		return err
+	}
+
+	_, err = statement.Exec(userId, followerId)
+
+	defer func(statement *sql.Stmt) {
+		err := statement.Close()
+		if err != nil {
+			log.Fatal("Error closing query")
+		}
+	}(statement)
+
+	return err
 }

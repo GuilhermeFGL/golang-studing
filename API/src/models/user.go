@@ -16,6 +16,7 @@ type User struct {
 	NickName  string    `json:"nickname"`
 	Password  string    `json:"password,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	Followers []string  `json:"followers,omitempty"`
 }
 
 // Prepare validate and format user data

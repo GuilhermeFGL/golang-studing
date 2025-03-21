@@ -10,9 +10,11 @@ import (
 func JSON(writer http.ResponseWriter, status int, model interface{}) {
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(status)
-	err := json.NewEncoder(writer).Encode(model)
-	if err != nil {
-		log.Fatal("Error writing response", err)
+	if status != http.StatusNoContent {
+		err := json.NewEncoder(writer).Encode(model)
+		if err != nil {
+			log.Fatal("Error writing response", err)
+		}
 	}
 }
 
